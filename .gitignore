@@ -55,3 +55,9 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Credentials Configuration File
+omero.cfg
+
+# OSX Folder Attributes File
+.DS_Store
