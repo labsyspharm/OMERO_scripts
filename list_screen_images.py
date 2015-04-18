@@ -1,4 +1,4 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 
 from argparse import ArgumentParser
 from omero_basics import OMEROConnectionManager
