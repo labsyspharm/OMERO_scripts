@@ -22,7 +22,7 @@ conn_manager = OMEROConnectionManager()
 # first field
 q = """
     select slink.parent.name,
-           plate.description,
+           plate.name,
            plate.id,
            well.row,
            well.column,
@@ -55,6 +55,6 @@ if args.quiet is False:
 
 # Output CSV file (if specified)
 if args.file is not None:
-    write_csv(rows, args.file, ["Screen Name", "Plate Description",
+    write_csv(rows, args.file, ["Screen Name", "Plate Name",
                                  "Plate ID", "Well", "Image ID"])
 
