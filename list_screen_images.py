@@ -17,9 +17,8 @@ args = parser.parse_args()
 # Create an OMERO Connection with our basic connection manager
 conn_manager = OMEROConnectionManager()
 
-# Define a query to get the list of images in a screen complete with
-# well ID, plate ID, Plate Description and Screen Name. Only queries the
-# first field
+# Define a query to get the list of image ID in a screen complete with
+# screen name, plate ID and well row/column. Only queries the first field.
 q = """
     select screen.name,
            plate.name,
