@@ -71,7 +71,10 @@ class OMEROConnectionManager:
         for row in rows:
             unwrapped_row=[]
             for column in row:
-                unwrapped_row.append(column.val)
+                if column is None:
+                    unwrapped_row.append(None)
+                else:
+                    unwrapped_row.append(column.val)
             unwrapped_rows.append(unwrapped_row)
 
         return unwrapped_rows
