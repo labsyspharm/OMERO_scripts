@@ -21,16 +21,17 @@ conn_manager = OMEROConnectionManager()
 # well ID, plate ID, Plate Description and Screen Name. Only queries the
 # first field
 q = """
-    select slink.parent.name,
+    select screen.name,
            plate.name,
            plate.id,
            well.row,
            well.column,
            ws.image.id
-    from Well well,
-         Plate plate
-    join well.wellSamples ws
+    from Well well
+    join well.plate plate
     join plate.screenLinks slink
+    join slink.parent screen
+    join well.wellSamples ws
     where index(ws)=0
     and slink.parent.id=%i
     """ % args.screen
