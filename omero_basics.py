@@ -45,6 +45,11 @@ class OMEROConnectionManager:
             sys.exit(1)
         return self.conn
 
+    def disconnect(self):
+        """ Terminate the OMERO Connection """
+        self.conn._closeSession()
+        self.conn = None
+
     def hql_query(self, query, params=None):
         """ Execute the given HQL query and return the results. Optionally
             accepts a parameters object.
