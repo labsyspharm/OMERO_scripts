@@ -48,13 +48,15 @@ for row in rows:
     # Remove the column field altogether
     row.pop(4)
 
+header = ["Screen Name", "Plate Name", "Plate ID", "Well", "Image ID"]
+
 # Print results (if not quieted)
 if args.quiet is False:
+    print ', '.join(header)
     for row in rows:
-        print row
+        print '%s, %s, %s, %s, %s' % tuple(row)
 
 # Output CSV file (if specified)
 if args.file is not None:
-    write_csv(rows, args.file, ["Screen Name", "Plate Name",
-                                 "Plate ID", "Well", "Image ID"])
+    write_csv(rows, args.file, header)
 
