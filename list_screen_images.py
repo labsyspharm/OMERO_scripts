@@ -54,7 +54,7 @@ header = ["Screen Name", "Plate Name", "Plate ID", "Well", "Image ID"]
 if args.quiet is False:
     print ', '.join(header)
     for row in rows:
-        print '%s, %s, %s, %s' % tuple(row)
+        print '%s, %s, %s, %s, %s' % tuple(row)
 
 # Output CSV file (if specified)
 if args.file is not None:
