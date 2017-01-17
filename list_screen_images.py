@@ -10,6 +10,8 @@ parser = ArgumentParser(description='List all images in a screen')
 parser.add_argument('screen', type=int)
 parser.add_argument('-q', '--quiet', action='store_const', const=True,
                     default=False, help="Do not print output")
+parser.add_argument('-n', '--nonames', action='store_const', const=True,
+                    default=False, help='Do not print names')
 parser.add_argument('-f', '--file', metavar='file',
                     help='Destination CSV file')
 args = parser.parse_args()
@@ -19,9 +21,18 @@ conn_manager = OMEROConnectionManager()
 
 # Define a query to get the list of image ID in a screen complete with
 # screen name, plate ID and well row/column. Only queries the first field.
-q = """
-    select screen.name,
-           plate.name,
+q = 'select'
+header = []
+first_well = 1
+
+if not args.nonames:
+    q += ' screen.name, '
+    q += ' plate.name, '
+    header.append('Screen Name')
+    header.append('Plate Name')
+    first_well += 2
+
+q += """
            plate.id,
            well.row,
            well.column,
@@ -43,20 +54,20 @@ rows = conn_manager.hql_query(q)
 for row in rows:
 
     # Calculate the Well and assign it to the position that row was in
-    row[3] = well_from_row_col(row[3], row[4])
+    row[first_well] = well_from_row_col(row[first_well], row[first_well+1])
 
     # Remove the column field altogether
-    row.pop(4)
+    row.pop(first_well+1)
 
-header = ["Screen Name", "Plate Name", "Plate ID", "Well", "Image ID"]
+
+header.extend(['Plate ID', 'Well', 'Image ID'])
 
 # Print results (if not quieted)
 if args.quiet is False:
     print ', '.join(header)
     for row in rows:
-        print '%s, %s, %s, %s, %s' % tuple(row)
+        print ', '.join([str(item) for item in row])
 
 # Output CSV file (if specified)
 if args.file is not None:
     write_csv(rows, args.file, header)
-
