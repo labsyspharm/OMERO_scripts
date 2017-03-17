@@ -23,7 +23,7 @@ conn_manager = OMEROConnectionManager()
 # screen name, plate ID and well row/column. Only queries the first field.
 q = 'select'
 header = []
-first_well = 1
+first_well = 2
 
 if not args.nonames:
     q += ' screen.name, '
@@ -34,6 +34,7 @@ if not args.nonames:
 
 q += """
            plate.id,
+           index(ws),
            well.row,
            well.column,
            ws.image.id
@@ -42,8 +43,12 @@ q += """
     join plate.screenLinks slink
     join slink.parent screen
     join well.wellSamples ws
-    where index(ws)=0
-    and slink.parent.id=%i
+    where slink.parent.id=%i
+    order by plate.id,
+             index(ws),
+             well.row,
+             well.column,
+             ws.image.id
     """ % args.screen
 
 # Run the query
@@ -60,7 +65,7 @@ for row in rows:
     row.pop(first_well+1)
 
 
-header.extend(['Plate ID', 'Well', 'Image ID'])
+header.extend(['Plate ID', 'Field', 'Well', 'Image ID'])
 
 # Print results (if not quieted)
 if args.quiet is False:
