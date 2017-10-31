@@ -1,0 +1,4 @@
+# Files likely used in testing
+*.yml
+*.yaml
+*.csv
