@@ -40,7 +40,7 @@ setup(
             'zmovie=omero_scripts.analysis.zmovie:main',
             'list_all_projects_with_datasets=omero_scripts.queries.list_all_projects_with_datasets:main',
             'list_plate_images=omero_scripts.queries.list_plate_images:main',
-            'list_project_images= mero_scripts.queries.list_project_images:main',
+            'list_project_images=omero_scripts.queries.list_project_images:main',
             'list_screen_images=omero_scripts.queries.list_screen_images:main',
             'list_screen_plates=omero_scripts.queries.list_screen_plates:main',
             'list_imports=omero_scripts.queries.list_imports:main',
