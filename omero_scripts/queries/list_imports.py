@@ -1,0 +1,126 @@
+#!/usr/bin/env python
+
+import sys
+from argparse import ArgumentParser
+from ..omero_basics import OMEROConnectionManager, write_csv
+from omero.sys import ParametersI
+from omero.rtypes import rtime
+import datetime
+import dateutil.parser
+
+epoch = datetime.datetime.utcfromtimestamp(0)
+
+
+def unix_time_millis(dt):
+    return (dt - epoch).total_seconds() * 1000.0
+
+
+def main(argv=sys.argv):
+
+    # Configure argument parsing
+    parser = ArgumentParser(description='''Report number of iamges imported in
+                                           a date range''')
+    parser.add_argument('-q', '--quiet', action='store_const', const=True,
+                        default=False, help='Do not print output')
+    parser.add_argument('-f', '--file', metavar='file',
+                        help='Destination CSV file')
+    parser.add_argument('-s', '--start', metavar='start',
+                        help='Start timestamp')
+    parser.add_argument('-e', '--end', metavar='end',
+                        help='End timestamp')
+    parser.add_argument('-a', '--all', action='store_const', const=True,
+                        default=False,
+                        help='Complete report. Ignores start/end')
+    args = parser.parse_args()
+
+    # Create an OMERO Connection with our basic connection manager
+    conn_manager = OMEROConnectionManager()
+
+
+    if args.all:
+
+        q = '''
+            SELECT grp.name,
+                   experimenter.omeName,
+                   TO_CHAR(event.time, 'YYYY-MM') AS cal_month,
+                   count(event.time)
+            FROM Image image
+            JOIN image.details.creationEvent event
+            JOIN image.details.owner experimenter
+            JOIN image.details.group grp
+            GROUP BY grp.name,
+                     experimenter.omeName,
+                     TO_CHAR(event.time, 'YYYY-MM')
+            ORDER BY grp.name, experimenter.omeName, TO_CHAR(event.time, 'YYYY-MM')
+            DESC
+            '''
+
+        # Run the query
+        rows = conn_manager.hql_query(q)
+        header = ['Group', 'Username', 'CalendarMonth', 'Count']
+
+    else:
+
+        params = ParametersI()
+        params.map = {}
+
+        start_date = None
+        end_date = None
+
+        try:
+            if args.start:
+                start_date = dateutil.parser.parse(args.start)
+            if args.end:
+                end_date = dateutil.parser.parse(args.end)
+        except ValueError:
+            sys.stderr.write('Start and/or end dates have to be parseable!')
+            sys.exit(1)
+
+        q = '''
+            SELECT grp.name,
+                   experimenter.omeName,
+                   count(event.time)
+            FROM Image image
+            JOIN image.details.creationEvent event
+            JOIN image.details.owner experimenter
+            JOIN image.details.group grp
+            '''
+
+        if start_date or end_date:
+            q += ' WHERE '
+
+        if start_date:
+            q += ' event.time >= :dstart '
+            params.map['dstart'] = rtime(unix_time_millis(start_date))
+
+        if start_date and end_date:
+            q += ' AND '
+
+        if end_date:
+            q += ' event.time <= :dend'
+            params.map['dend'] = rtime(unix_time_millis(end_date))
+
+        q += '''
+            GROUP BY grp.name,
+                     experimenter.omeName
+            '''
+
+        # Run the query
+        rows = conn_manager.hql_query(q, params)
+        header = ['Group', 'Username', 'Count']
+
+
+    # Print results (if not quieted)
+    if args.quiet is False:
+        print ', '.join(header)
+        for row in rows:
+            print ', '.join([str(item) for item in row])
+
+    # Output CSV file (if specified)
+    if args.file is not None:
+        write_csv(rows,
+                  args.file,
+                  header)
+
+if __name__ == '__main__':
+    main()

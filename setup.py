@@ -10,7 +10,8 @@ requires = [
     'numpy>=1.11.1',
     'opencv-python>=3.3.0.10',
     'colour>=0.1.4',
-    'PyYAML>=3.12'
+    'PyYAML>=3.12',
+    'python-dateutil>=2.6.1'
 ]
 
 
@@ -42,6 +43,7 @@ setup(
             'list_project_images= mero_scripts.queries.list_project_images:main',
             'list_screen_images=omero_scripts.queries.list_screen_images:main',
             'list_screen_plates=omero_scripts.queries.list_screen_plates:main',
+            'list_imports=omero_scripts.queries.list_imports:main',
             'csv2yaml=omero_scripts.conversion.csv2yaml:main'
         ]
     },
