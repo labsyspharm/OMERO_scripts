@@ -94,7 +94,7 @@ if not create_ref.ok:
 create_release_url = '%s/releases' % GIT_API_URL
 create_release_payload = {
     'tag_name': 'v%s' % VERSION,
-    'name': 'OMERO.forms %s' % VERSION
+    'name': 'OMERO_scripts %s' % VERSION
 }
 print 'Creating release...'
 create_release = requests.post(create_release_url,
@@ -107,13 +107,4 @@ print 'Fetching newly created references...'
 for remote in repo.remotes:
     remote.fetch()
 
-# TODO Instead of this, deploy to O2?
-# # Register and upload to pypi
-# print 'Registering with pypi...'
-# check_call(['twine', 'register', '-r', 'pypi',
-#            'dist/omero-forms-%s.tar.gz' % VERSION])
-# print 'Uploading to pypi...'
-# check_call(['twine', 'upload', '-r', 'pypi',
-#            'dist/omero-forms-%s.tar.gz' % VERSION])
-
-print 'Successful release of OMERO.forms %s' % VERSION
+print 'Successful release of OMERO_scripts %s' % VERSION
