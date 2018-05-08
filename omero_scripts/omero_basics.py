@@ -4,7 +4,7 @@ import ConfigParser
 from omero.util.sessions import SessionsStore
 from omero.gateway import BlitzGateway
 from omero.sys import ParametersI
-from csv import writer, QUOTE_NONE
+from csv import writer, QUOTE_ALL
 
 
 class OMEROConnectionManager:
@@ -143,7 +143,7 @@ def write_csv(rows, filename, header=None):
 
     # Write the CSV File
     with open(filename, 'wb') as csvfile:
-        row_writer = writer(csvfile, quoting=QUOTE_NONE)
+        row_writer = writer(csvfile, quoting=QUOTE_ALL)
         if header is not None:
             row_writer.writerow(header)
         row_writer.writerows(rows)

@@ -44,6 +44,7 @@ setup(
             'list_screen_images=omero_scripts.queries.list_screen_images:main',
             'list_screen_plates=omero_scripts.queries.list_screen_plates:main',
             'list_imports=omero_scripts.queries.list_imports:main',
+            'list_users=omero_scripts.queries.list_users:main',
             'csv2yaml=omero_scripts.conversion.csv2yaml:main'
         ]
     },

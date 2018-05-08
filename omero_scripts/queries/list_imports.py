@@ -9,6 +9,11 @@ import datetime
 import dateutil.parser
 
 epoch = datetime.datetime.utcfromtimestamp(0)
+periods = {
+    'year': 'YYYY',
+    'month': 'YYYY-MM',
+    'day': 'YYYY-MM-DD'
+}
 
 
 def unix_time_millis(dt):
@@ -18,7 +23,7 @@ def unix_time_millis(dt):
 def main(argv=sys.argv):
 
     # Configure argument parsing
-    parser = ArgumentParser(description='''Report number of iamges imported in
+    parser = ArgumentParser(description='''Report number of images imported in
                                            a date range''')
     parser.add_argument('-q', '--quiet', action='store_const', const=True,
                         default=False, help='Do not print output')
@@ -31,18 +36,20 @@ def main(argv=sys.argv):
     parser.add_argument('-a', '--all', action='store_const', const=True,
                         default=False,
                         help='Complete report. Ignores start/end')
+    parser.add_argument('-p', '--period', choices=['year', 'month', 'day'],
+                        default='month',
+                        help='Period for use in conjunction with -a')
     args = parser.parse_args()
 
     # Create an OMERO Connection with our basic connection manager
     conn_manager = OMEROConnectionManager()
-
 
     if args.all:
 
         q = '''
             SELECT grp.name,
                    experimenter.omeName,
-                   TO_CHAR(event.time, 'YYYY-MM') AS cal_month,
+                   TO_CHAR(event.time, '{period}') AS cal_period,
                    count(event.time)
             FROM Image image
             JOIN image.details.creationEvent event
@@ -50,14 +57,18 @@ def main(argv=sys.argv):
             JOIN image.details.group grp
             GROUP BY grp.name,
                      experimenter.omeName,
-                     TO_CHAR(event.time, 'YYYY-MM')
-            ORDER BY grp.name, experimenter.omeName, TO_CHAR(event.time, 'YYYY-MM')
+                     TO_CHAR(event.time, '{period}')
+            ORDER BY grp.name,
+                     experimenter.omeName,
+                     TO_CHAR(event.time, '{period}')
             DESC
             '''
 
+        q = q.format(period=periods[args.period])
+
         # Run the query
         rows = conn_manager.hql_query(q)
-        header = ['Group', 'Username', 'CalendarMonth', 'Count']
+        header = ['Group', 'Username', 'Period', 'Count']
 
     else:
 
@@ -109,7 +120,6 @@ def main(argv=sys.argv):
         rows = conn_manager.hql_query(q, params)
         header = ['Group', 'Username', 'Count']
 
-
     # Print results (if not quieted)
     if args.quiet is False:
         print ', '.join(header)
@@ -121,6 +131,7 @@ def main(argv=sys.argv):
         write_csv(rows,
                   args.file,
                   header)
+
 
 if __name__ == '__main__':
     main()
