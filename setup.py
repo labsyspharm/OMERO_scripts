@@ -1,5 +1,7 @@
+from future import standard_library
+standard_library.install_aliases()
 import os
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))

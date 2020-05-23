@@ -1,7 +1,10 @@
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
 import os
 import json
 from subprocess import check_call
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 import git
 import requests
 from datetime import datetime
@@ -28,7 +31,7 @@ def now():
 
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
-GIT_API_URL = 'https://api.github.com/repos/sorgerlab/OMERO_scripts'
+GIT_API_URL = 'https://api.github.com/repos/labsyspharm/OMERO_scripts'
 VERSION = read_version(DIR_PATH)
 
 # Get configuration
@@ -42,21 +45,21 @@ auth = requests.auth.HTTPBasicAuth(username, token)
 
 # Ensure that there are no changes in this repository, staged or otherwise
 if repo.is_dirty():
-    print 'Repository has changes, commit changes before releasing for safety'
+    print('Repository has changes, commit changes before releasing for safety')
     exit(1)
 
 # Ensure the commit exists on gitHub
 existing_commit_url = '%s/commits/%s' % (GIT_API_URL, head)
 existing_commit = requests.get(existing_commit_url, auth=auth)
 if not existing_commit.ok:
-    print 'Commit is not on GitHub, push before releasing'
+    print('Commit is not on GitHub, push before releasing')
     exit(1)
 
 # Ensure this tag does not already exist
 existing_tag_url = '%s/git/refs/tags/v%s' % (GIT_API_URL, VERSION)
 existing_tag = requests.get(existing_tag_url, auth=auth)
 if existing_tag.status_code != 404:
-    print 'Tag already exists on GitHub, version number might need bumping'
+    print('Tag already exists on GitHub, version number might need bumping')
     exit(1)
 
 # Create the tag on GitHub
@@ -72,10 +75,10 @@ create_tag_payload = {
         'date': now()
     }
 }
-print 'Creating tag...'
+print('Creating tag...')
 create_tag = requests.post(create_tag_url, json=create_tag_payload, auth=auth)
 if not create_tag.ok:
-    print 'Tag creation failed'
+    print('Tag creation failed')
     exit(1)
 
 # Create the tag reference on GitHub
@@ -84,10 +87,10 @@ create_ref_payload = {
     'ref': 'refs/tags/v%s' % (VERSION),
     'sha': create_tag.json()['sha']
 }
-print 'Creating tag reference...'
+print('Creating tag reference...')
 create_ref = requests.post(create_ref_url, json=create_ref_payload, auth=auth)
 if not create_ref.ok:
-    print 'Tag reference creation failed'
+    print('Tag reference creation failed')
     exit(1)
 
 # Create the release on gitHub
@@ -96,15 +99,15 @@ create_release_payload = {
     'tag_name': 'v%s' % VERSION,
     'name': 'OMERO_scripts %s' % VERSION
 }
-print 'Creating release...'
+print('Creating release...')
 create_release = requests.post(create_release_url,
                                json=create_release_payload, auth=auth)
 if not create_release.ok:
-    print 'Release creation failed'
+    print('Release creation failed')
     exit(1)
 
-print 'Fetching newly created references...'
+print('Fetching newly created references...')
 for remote in repo.remotes:
     remote.fetch()
 
-print 'Successful release of OMERO_scripts %s' % VERSION
+print('Successful release of OMERO_scripts %s' % VERSION)

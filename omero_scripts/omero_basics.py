@@ -1,67 +1,27 @@
+from future import standard_library
+standard_library.install_aliases()
+from builtins import chr
+from builtins import object
 import sys
 import os
-import ConfigParser
+import configparser
 from omero.util.sessions import SessionsStore
 from omero.gateway import BlitzGateway
 from omero.sys import ParametersI
 from csv import writer, QUOTE_ALL
+from pathlib import Path
 
-
-class OMEROConnectionManager:
+class OMEROConnectionManager(object):
     ''' Basic management of an OMERO Connection. Methods which make use of
-        a connection will attempt to connect if connect was not already
+        a connection will attempt to connect if connection was not already
         successfuly executed '''
 
-    def __init__(self, config_file=None):
+    def __init__(self, config_file=Path.home() / '.omero' / 'config'):
+
+        self.config_file = config_file
 
         # Set the connection as not established
         self.conn = None
-
-        self.SUUID = None
-        self.HOST = None
-        self.PORT = None
-        self.USERNAME = None
-        self.PASSWORD = None
-
-        # If config_file not specified, first see if there's an active OMERO
-        # CLI session.
-        if config_file is None:
-            store = SessionsStore()
-            session_props = store.get_current()
-            self.HOST, self.USERNAME, self.SUUID, self.PORT = session_props
-
-        # config_file specified, or no active session. Continue with reading
-        # connection params from the config file.
-        if config_file is not None or self.SUUID is None:
-
-            # Normalize file path.
-            if config_file is None:
-                config_file = '~/.omero/config'
-            config_file = os.path.expanduser(config_file)
-
-            # Check config file exists.
-            if not (os.path.exists(config_file)
-                    and os.path.isfile(config_file)):
-                sys.stderr.write('No active OMERO CLI session and '
-                                 'configuration file {} does not '
-                                 'exist\n'.format(config_file))
-                sys.exit(1)
-
-            # Check permisisons on config file.
-            if os.stat(config_file).st_mode & 0077:
-                sys.stderr.write('Configuration file contains private '
-                                 'credentials and must not be accessible by '
-                                 'other users. Please run:\n\n'
-                                 '    chmod 600 {}\n\n'.format(config_file))
-                sys.exit(1)
-
-            # Read the credentials file.
-            config = ConfigParser.RawConfigParser()
-            config.read(config_file)
-            self.HOST = config.get('OMEROCredentials', 'host')
-            self.PORT = config.getint('OMEROCredentials', 'port')
-            self.USERNAME = config.get('OMEROCredentials', 'username')
-            self.PASSWORD = config.get('OMEROCredentials', 'password')
 
     def connect(self):
         ''' Create an OMERO Connection '''
@@ -70,17 +30,22 @@ class OMEROConnectionManager:
         if self.conn is not None:
             return self.conn
 
+        params = get_params_from_session()
+
+        if params is None:
+            params = get_params_from_config_file(self.config_file)
+
         # Initialize the connection. At least HOST and PORT will be defined,
         # but USERNAME and PASSWORD may be None if we are connecting to an
         # existing session via its uuid.
-        self.conn = BlitzGateway(username=self.USERNAME,
-                                 passwd=self.PASSWORD,
-                                 host=self.HOST,
-                                 port=self.PORT)
+        self.conn = BlitzGateway(username=params.get('username'),
+                                 passwd=params.get('password'),
+                                 host=params['host'],
+                                 port=params['port'])
 
         # Connect. If USERNAME and PASSWORD are None then SUUID must be
         # defined.
-        connected = self.conn.connect(sUuid=self.SUUID)
+        connected = self.conn.connect(sUuid=params.get('suuid'))
 
         # Check that the connection was established
         if not connected:
@@ -133,6 +98,54 @@ class OMEROConnectionManager:
         self.disconnect()
 
 
+def get_params_from_session():
+    store = SessionsStore()
+    session_props = store.get_current()
+    host, username, suuid, port = session_props
+
+    # If there is no suuid, there is no session
+    if suuid is None:
+        return None
+
+    return {
+        'host': host,
+        'username': username,
+        'suuid': suuid,
+        'port': port
+    }
+
+
+def get_params_from_config_file(config_file):
+    '''Set parameters from config_file.'''
+
+    # Check config file exists.
+    if not (os.path.exists(config_file)
+            and os.path.isfile(config_file)):
+        sys.stderr.write('No active OMERO CLI session and '
+                            'configuration file {} does not '
+                            'exist\n'.format(config_file))
+        sys.exit(1)
+
+    # Check permisisons on config file.
+    if os.stat(config_file).st_mode & 0o077:
+        sys.stderr.write('Configuration file contains private '
+                            'credentials and must not be accessible by '
+                            'other users. Please run:\n\n'
+                            '    chmod 600 {}\n\n'.format(config_file))
+        sys.exit(1)
+
+    # Read the credentials file.
+    config = configparser.RawConfigParser()
+    config.read(config_file)
+
+    return {
+        'host': config.get('OMEROCredentials', 'host'),
+        'port': config.getint('OMEROCredentials', 'port'),
+        'username': config.get('OMEROCredentials', 'username'),
+        'password': config.get('OMEROCredentials', 'password')
+    }
+
+
 def write_csv(rows, filename, header=None):
     ''' Write a CSV File with the given header and rows '''
 
@@ -143,7 +156,7 @@ def write_csv(rows, filename, header=None):
                          'as the rows')
 
     # Write the CSV File
-    with open(filename, 'wb') as csvfile:
+    with open(filename, 'w') as csvfile:
         row_writer = writer(csvfile, quoting=QUOTE_ALL)
         if header is not None:
             row_writer.writerow(header)

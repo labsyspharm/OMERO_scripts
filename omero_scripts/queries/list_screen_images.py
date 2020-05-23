@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+from builtins import str
 import sys
 from argparse import ArgumentParser
 from ..omero_basics import OMEROConnectionManager, write_csv, well_from_row_col
@@ -71,9 +73,9 @@ def main(argv=sys.argv):
 
     # Print results (if not quieted)
     if args.quiet is False:
-        print ', '.join(header)
+        print(', '.join(header))
         for row in rows:
-            print ', '.join([str(item) for item in row])
+            print(', '.join([str(item) for item in row]))
 
     # Output CSV file (if specified)
     if args.file is not None:

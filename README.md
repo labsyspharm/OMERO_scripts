@@ -6,5 +6,5 @@ Repository for OMERO related scripts
 To install this python package:
 
 ```bash
-pip install git+https://github.com/sorgerlab/OMERO_scripts
+pip install git+https://github.com/labsyspharm/OMERO_scripts
 ```

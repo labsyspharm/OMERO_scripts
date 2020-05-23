@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+from __future__ import division
+from builtins import next
+from builtins import str
+from builtins import range
 import sys
 import os
 import shutil
@@ -160,7 +164,7 @@ def main(argv=sys.argv):
     if labels:
         labels_iter = iter(labels)
 
-    for z in xrange(sizeZ):
+    for z in range(sizeZ):
 
         # Skip ignored cycles
         if z in ignored_cycles:
@@ -219,7 +223,7 @@ def main(argv=sys.argv):
     # ffmpeg -framerate 1 -i color_img_%d.jpg -vcodec libx264 -crf 25 \
     #   -pix_fmt yuv420p -r 60 test.mp4
     try:
-        subprocess.call(['ffmpeg', '-framerate', str(1 / args.duration), '-y',
+        subprocess.call(['ffmpeg', '-framerate', 1 / args.duration, '-y',
                          '-i', os.path.join(project, 'img_%d.jpg'), '-vcodec',
                          'libx264', '-crf', '25', '-pix_fmt', 'yuv420p',
                          '-r', '60',
