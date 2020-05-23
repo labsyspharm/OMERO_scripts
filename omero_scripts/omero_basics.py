@@ -91,8 +91,9 @@ class OMEROConnectionManager:
 
     def disconnect(self):
         ''' Terminate the OMERO Connection '''
-        self.conn.seppuku(softclose=True)
-        self.conn = None
+        if self.conn:
+            self.conn.seppuku(softclose=True)
+            self.conn = None
 
     def hql_query(self, query, params=None):
         ''' Execute the given HQL query and return the results. Optionally
