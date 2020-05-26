@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import division
-from builtins import next
-from builtins import str
-from builtins import range
 import sys
 import os
 import shutil

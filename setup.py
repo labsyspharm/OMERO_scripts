@@ -1,5 +1,3 @@
-from future import standard_library
-standard_library.install_aliases()
 import os
 from configparser import ConfigParser
 from setuptools import setup, find_packages
@@ -13,7 +11,8 @@ requires = [
     'opencv-python>=3.3.0.10',
     'colour>=0.1.4',
     'PyYAML>=3.12',
-    'python-dateutil>=2.6.1'
+    'python-dateutil>=2.6.1',
+    'omero-py>=5.6.0'
 ]
 
 
@@ -37,6 +36,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=requires,
+    python_requires="~=3.5",
     entry_points={
         'console_scripts': [
             'zmovie=omero_scripts.analysis.zmovie:main',
@@ -61,7 +61,7 @@ setup(
         'Topic :: Scientific/Engineering :: Visualization'
     ],
     author=AUTHOR,
-    author_email='douglas_russell@hms.harvard.edu',
+    author_email='dpwrussell@gmail.com',
     license=LICENSE,
     url=HOMEPAGE,
     download_url='%s/archive/v%s.tar.gz' % (HOMEPAGE, VERSION),

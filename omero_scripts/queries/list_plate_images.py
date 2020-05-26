@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-from builtins import str
 import sys
 from argparse import ArgumentParser
 from ..omero_basics import OMEROConnectionManager, write_csv, well_from_row_col
